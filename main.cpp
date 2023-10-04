@@ -36,6 +36,7 @@ void count_sort(std::vector<int>& a, int thread_count)
 	size_t n = a.size();
 
 	std::vector<int> temp(n,-1); // Initialize n-vector with all -1's
+	
 	int count = 0;
 	int i = 0;
 	int j = 0;
