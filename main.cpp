@@ -3,6 +3,8 @@
 #include <vector>
 
 void count_sort(std::vector<int>& a, int thread_count);
+void serial_count_sort(std::vector<int>& a);
+void print_vector(std::vector<int> a);
 
 int main(int argc, char const* argv[])
 {
@@ -18,7 +20,21 @@ int main(int argc, char const* argv[])
 		{
 			data.push_back(rand());
 		}
+		std::vector<int> serial_data = data;
+		//Print original data
+		std::cout << "Random Data:" << std::endl;
+		print_vector(data);
+		//Sort data
 		count_sort(data,thread_count);
+		serial_count_sort(serial_data);
+		//Print new data
+		std::cout << "Sorted Data:" << std::endl;
+		print_vector(data);
+
+		if (data == serial_data)
+		{
+			std::cout << "Serial Sorting and Parallel Sorting Match!" << std::endl;
+		}
 	}
 	else {
 		std::cout << "Err: Invalid number of command line arguments specified" << std::endl;
@@ -36,16 +52,17 @@ void count_sort(std::vector<int>& a, int thread_count)
 	size_t n = a.size();
 
 	std::vector<int> temp(n,-1); // Initialize n-vector with all -1's
-	
+
 	int count = 0;
 	int i = 0;
 	int j = 0;
 
+	// Parallelize the outer for loop
 	#pragma omp parallel for num_threads(thread_count) \
-		private(count,i,j)
-		for (int i = 0; i < n; ++i)
+		shared(a,n,temp) private(count,i,j)
+		for (i = 0; i < n; i++)
 		{
-			for (int j = 0; j < n; ++j)
+			for (j = 0; j < n; j++)
 			{
 				if (a[j] < a[i])
 				{
@@ -56,17 +73,60 @@ void count_sort(std::vector<int>& a, int thread_count)
 					count++;
 				}
 			}
-	#		pragma omp critical
+			// Define a critical section so there is no race condition on temp
+			// Err -- There is a segmentation fault in the critical section
+			#pragma omp critical
 			{
 				temp[count] = a[i];
+				count = 0;
 			}
 		}
+	// Define a barrier so that temp is fully sorted before proceeding
 	#pragma omp barrier
+	// Parallelize the copying of temp over to a
 	#pragma omp parallel for num_threads(thread_count) \
-		private(i)
-		for (int i = 0; i < n; ++i)
+		default(none) shared(a,temp,n) private(i)
+		for (i = 0; i < n; ++i)
 		{
 			a[i] = temp[i];
 		}
-	
+}
+
+void serial_count_sort(std::vector<int>& a)
+{
+	int count;
+	size_t n = a.size();
+	std::vector<int> temp(n,-1); // Initialize n-vector with all -1's
+	for (int i = 0; i < n; i++)
+	{
+		count = 0;
+		for (int j = 0; j < n; j++)
+		{
+			if (a[j] < a[i])
+			{
+				count++;
+			}
+			else if (a[j] == a[i] && j < i)
+			{
+				count++;
+			}
+		}
+		temp[count] = a[i];
+	}
+	a = temp;
+}
+
+void print_vector(std::vector<int> a)
+{
+	for (int i = 0; i < a.size(); ++i)
+	{
+		if (i == a.size()-1)
+		{
+			std::cout << a[i] << std::endl << std::endl;
+		}
+		else 
+		{
+			std::cout << a[i] << ", ";
+		}
+	}
 }
