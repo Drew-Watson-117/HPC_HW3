@@ -74,7 +74,6 @@ void count_sort(std::vector<int>& a, int thread_count)
 				}
 			}
 			// Define a critical section so there is no race condition on temp
-			// Err -- There is a segmentation fault in the critical section
 			#pragma omp critical
 			{
 				temp[count] = a[i];
@@ -83,7 +82,7 @@ void count_sort(std::vector<int>& a, int thread_count)
 		}
 	// Define a barrier so that temp is fully sorted before proceeding
 	#pragma omp barrier
-	// Parallelize the copying of temp over to a
+	// Parallelize the copying of temp over to a (previously a memcpy)
 	#pragma omp parallel for num_threads(thread_count) \
 		default(none) shared(a,temp,n) private(i)
 		for (i = 0; i < n; ++i)
