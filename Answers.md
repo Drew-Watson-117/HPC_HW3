@@ -13,7 +13,7 @@ for (i = 0; i < n; i++)
 }
 ```
 
-and then parallelize the for loop:
+and then parallelize the for loop using omp parallel for:
 
 ```
 # pragma omp parallel for num_threads(thread_count) \

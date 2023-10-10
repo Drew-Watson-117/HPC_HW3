@@ -19,7 +19,7 @@ int main(int argc, char const* argv[])
 		// Load vector with random float values
 		for (int i = 0; i < n; i++)
 		{
-			data.push_back(rand());
+			data.push_back(rand() % n + 1);
 		}
 		std::vector<int> serial_data = data;
 		//Print original data
@@ -46,8 +46,8 @@ int main(int argc, char const* argv[])
 		}
 		
 		//Print times
-		std::cout << "Time taken for Serial Algorithm: " << serial_time.count() << std::endl;
-		std::cout << "Time taken for Parallel Algorithm: " << parallel_time.count() << std::endl;
+		std::cout << "Time taken for Serial Algorithm: " << serial_time.count() << " ms" << std::endl;
+		std::cout << "Time taken for Parallel Algorithm: " << parallel_time.count() << " ms" << std::endl;
 
 	}
 	else {
