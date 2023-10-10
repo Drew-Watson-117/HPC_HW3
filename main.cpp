@@ -71,7 +71,7 @@ void count_sort(std::vector<int>& a, int thread_count)
 	int i = 0;
 	int j = 0;
 
-	// Parallelize the outer for loop
+	// Parallelize the outer for loop using omp parallel for
 	#pragma omp parallel for num_threads(thread_count) \
 		shared(a,n,temp) private(count,i,j)
 		for (i = 0; i < n; i++)
@@ -87,16 +87,16 @@ void count_sort(std::vector<int>& a, int thread_count)
 					count++;
 				}
 			}
-			// Define a critical section so there is no race condition on temp
+			// Define a critical section so there is no race condition on temp using omp critical
 			#pragma omp critical
 			{
 				temp[count] = a[i];
 				count = 0;
 			}
 		}
-	// Define a barrier so that temp is fully sorted before proceeding
+	// Define a barrier so that temp is fully sorted before proceeding using omp barrier
 	#pragma omp barrier
-	// Parallelize the copying of temp over to a (previously a memcpy)
+	// Parallelize the copying of temp over to a (previously a memcpy) using omp parallel for
 	#pragma omp parallel for num_threads(thread_count) \
 		default(none) shared(a,temp,n) private(i)
 		for (i = 0; i < n; ++i)
