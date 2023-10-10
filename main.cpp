@@ -1,6 +1,7 @@
 #include <omp.h>
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 void count_sort(std::vector<int>& a, int thread_count);
 void serial_count_sort(std::vector<int>& a);
@@ -25,8 +26,16 @@ int main(int argc, char const* argv[])
 		std::cout << "Random Data:" << std::endl;
 		print_vector(data);
 		//Sort data
+		auto parallel_start = std::chrono::high_resolution_clock::now();
 		count_sort(data,thread_count);
+		auto parallel_end = std::chrono::high_resolution_clock::now();
+		auto serial_start = std::chrono::high_resolution_clock::now();
 		serial_count_sort(serial_data);
+		auto serial_end = std::chrono::high_resolution_clock::now();
+
+		auto parallel_time = std::chrono::duration_cast<std::chrono::microseconds>(parallel_end-parallel_start);
+		auto serial_time = std::chrono::duration_cast<std::chrono::microseconds>(serial_end-serial_start);
+
 		//Print new data
 		std::cout << "Sorted Data:" << std::endl;
 		print_vector(data);
@@ -35,6 +44,11 @@ int main(int argc, char const* argv[])
 		{
 			std::cout << "Serial Sorting and Parallel Sorting Match!" << std::endl;
 		}
+		
+		//Print times
+		std::cout << "Time taken for Serial Algorithm: " << serial_time.count() << std::endl;
+		std::cout << "Time taken for Parallel Algorithm: " << parallel_time.count() << std::endl;
+
 	}
 	else {
 		std::cout << "Err: Invalid number of command line arguments specified" << std::endl;
